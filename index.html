@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suhi - AI College Assistant</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADPSURBVFhH7ZaxCYAwEEW9g3+BX+C3cAM3cANb3MBG7uAObuAGbsAIaWQUwUjYk/4kSTLsCyF+BEABVAAVQAVQAVQAFUAFUAFUABVABVABVAAVQAVQAVQAFUAFUAFUABVABVABVAAVQAVQAVQAFUAFUAFUABVABVABVAAVQAVQAVQAFUAFUAFUABVABVABVAAVQAVQAVQAFUAFUAFUABVABVABVAAVQAVQAVQAFUAFUAFUABVABVABVAAVQAVQAVQAFUAFUAFUABVABVABVAAVQAFeAP4A4z1j5Q9VJ8AAAAASUVORK5CYII=">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary': '#8B5CF6',
+            'secondary': '#14B8A6',
+            'dark': '#0F172A',
+            'light': '#F8FAFC',
+            'user-bg': '#3B82F6',
+            'bot-bg': '#F3F4F6'
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'pulse-glow': 'pulseGlow 2s infinite',
+            'typing': 'typing 1.5s infinite'
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(100%)' },
+              '100%': { transform: 'translateY(0)' }
+            },
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)' },
+              '50%': { boxShadow: '0 0 30px rgba(139, 92, 246, 0.6)' }
+            },
+            typing: {
+              '0%, 60%': { opacity: '1' },
+              '61%, 100%': { opacity: '0' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-dark via-slate-900 to-slate-800 text-white min-h-screen overflow-hidden">
+  <!-- Background Effects -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/10 blur-3xl"></div>
+    <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-secondary/10 blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-r from-primary/5 to-secondary/5 blur-3xl"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="relative z-10 bg-black/20 backdrop-blur-xl border-b border-white/10">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center animate-pulse-glow">
+            <img src="logo.png" alt="Suhi Logo" class="w-6 h-6" style="width: 100%; height: 100%;">
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Suhi
+            </h1>
+            <p class="text-xs text-gray-400">AI-Powered College Assistant</p>
+          </div>
+        </div>
+        
+        <!-- Status Indicator -->
+        <div class="flex items-center space-x-2">
+          <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <span class="text-sm text-gray-300">Online</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Chat Container -->
+  <main class="relative z-10 flex flex-col h-screen pt-20 pb-24">
+    <!-- Chat Messages -->
+    <div id="chat-container" class="flex-1 overflow-y-auto px-4 pb-28 space-y-4 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-dark">
+      <!-- Welcome Message -->
+      <div class="flex justify-center mb-8">
+        <div class="bg-black/30 backdrop-blur-xl rounded-2xl p-6 border border-white/10 max-w-md text-center animate-fade-in">
+          <div class="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-graduation-cap text-white text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Poochho.. apni Suhi se....!</h3>
+          <p class="text-gray-400 text-sm">Your AI-powered assistant for Dumka Engineering College and general queries. Ask about courses, facilities, placements, or anything else! 😊</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex justify-center mb-6">
+        <div class="flex flex-wrap gap-2 max-w-2xl">
+          <button onclick="sendQuickMessage('Show my today schedule')" class="quick-action-btn">
+            <i class="fas fa-calendar mr-2"></i>Today's Schedule
+          </button>
+          <button onclick="sendQuickMessage('Tell me about college facilities')" class="quick-action-btn">
+            <i class="fas fa-building mr-2"></i>Facilities
+          </button>
+          <button onclick="sendQuickMessage('What are the placement statistics?')" class="quick-action-btn">
+            <i class="fas fa-chart-line mr-2"></i>Placements
+          </button>
+          <button onclick="sendQuickMessage('Tell me about admission process')" class="quick-action-btn">
+            <i class="fas fa-user-graduate mr-2"></i>Admissions
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div class="fixed bottom-0 left-0 right-0 bg-black/20 backdrop-blur-xl border-t border-white/10 p-4">
+      <div class="container mx-auto max-w-4xl">
+        <div class="flex items-end space-x-3">
+          <!-- File Upload -->
+          <button class="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 group">
+            <i class="fas fa-paperclip text-gray-400 group-hover:text-white"></i>
+          </button>
+          
+          <!-- Message Input -->
+          <div class="flex-1 relative">
+            <textarea 
+              id="message-input" 
+              placeholder="Ask anything from -- Your Suhi :)"
+              rows="1"
+              class="w-full px-4 py-3 pr-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+              style="max-height: 120px;"
+            ></textarea>
+            
+            <!-- Typing Indicator -->
+            <div id="typing-indicator" class="absolute bottom-2 right-3 hidden">
+              <div class="flex space-x-1">
+                <div class="w-1 h-1 bg-primary rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                <div class="w-1 h-1 bg-primary rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                <div class="w-1 h-1 bg-primary rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Send Button -->
+          <button 
+            id="send-button" 
+            onclick="sendMessage()"
+            class="p-3 bg-gradient-to-r from-primary to-secondary hover:from-primary/80 hover:to-secondary/80 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="fas fa-paper-plane text-white"></i>
+          </button>
+          
+          <!-- Voice Input -->
+          <button class="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 group">
+            <i class="fas fa-microphone text-gray-400 group-hover:text-white"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="notification" class="fixed top-4 right-4 bg-black/80 backdrop-blur-xl border border-white/20 rounded-xl p-4 transform translate-x-full transition-transform duration-300 z-50">
+    <div class="flex items-center space-x-3">
+      <i class="fas fa-bell text-secondary"></i>
+      <span id="notification-text">Notification</span>
+    </div>
+  </div>
+
+  <style>
+    .quick-action-btn {
+      @apply px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm transition-all duration-200 border border-white/10 hover:border-white/20 backdrop-blur-sm;
+    }
+    
+    .message-bubble {
+      @apply max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl break-words;
+    }
+    
+    .user-message {
+      @apply text-white ml-auto bg-user-bg;
+    }
+    
+    .bot-message {
+      @apply text-gray-900 mr-auto bg-bot-bg border border-gray-200;
+    } 
+    
+    .scrollbar-thin {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(139, 92, 246, 0.5) #0F172A;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #0F172A;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background-color: rgba(139, 92, 246, 0.5);
+      border-radius: 4px;
+    }
+    
+    textarea {
+      field-sizing: content;
+    }
+  </style>
+
+  <script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+    const genAI = new GoogleGenerativeAI("AIzaSyB9-r28ZUGt7swHJQyImvI1xsC1vOhwT6M");
+
+    const collegeData = {
+      schedule: [
+        ["Monday", "09:30-10:20", "Computer Network", "Keshab Sir", "Lab 1", "lecture"],
+        ["Monday", "11:10-12:00", "Algorithm Lab", "Sunidhi Mam", "Computer Lab", "lab", "Group 1"],
+        ["Monday", "14:20-15:10", "Sports/Painting/Music", "Arindum Sir", "Sports Complex", "activity"],
+        ["Tuesday", "09:30-10:20", "Algorithm", "Sunidhi Mam", "Room 201", "lecture"],
+        ["Tuesday", "10:20-11:10", "Advanced Programming", "Amit Sir", "Room 205", "lecture"],
+        ["Tuesday", "11:10-12:00", "Machine Learning", "Keshab Sir", "Room 203", "lecture"],
+        ["Tuesday", "12:20-13:10", "Maths Modelling", "RKB Sir", "Room 204", "lecture"],
+        ["Tuesday", "14:20-15:10", "Algorithm Lab", "Sunidhi Mam", "Computer Lab", "lab", "Group 2"],
+        ["Wednesday", "09:30-10:20", "Advanced Programming", "Amit Sir", "Room 205", "lecture"],
+        ["Wednesday", "10:30-10:20", "Operating System", "Ranadeep Sir", "Room 205", "lecture"],
+        ["Wednesday", "11:30-12:20", "Finance", "Anwesha Mam", "Room 206", "lecture"],
+        ["Wednesday", "12:30-14:20", "Operating System Lab", "Ranadeep Sir", "OS Lab", "lab", "Group 2"],
+        ["Thursday", "09:30-10:30", "Algorithm", "Sunidhi Mam", "Room 201", "lecture"],
+        ["Thursday", "10:30-11:20", "Career Advancement", "Anutosh Sir", "Seminar Hall", "seminar"],
+        ["Thursday", "11:30-12:20", "Advanced Programming Lab", "Amit Sir", "Programming Lab", "lab", "Group 2"],
+        ["Thursday", "12:30-13:20", "Maths Modelling", "RKB Sir", "Room 204", "lecture"],
+        ["Friday", "09:30-10:20", "Operating System", "Ranadeep Sir", "Room 205", "lecture"],
+        ["Friday", "10:30-11:20", "Career Advancement", "Anutosh Sir", "Seminar Hall", "seminar"],
+        ["Friday", "14:20-15:10", "Maths Modelling", "RKB Sir", "Room 204", "lecture"],
+        ["Friday", "15:30-17:20", "Operating System Lab", "Ranadeep Sir", "OS Lab", "lab", "Group 1"]
+      ],
+      collegeInfo: `
+# Dumka Engineering College (DEC) - Comprehensive Overview
+
+## Introduction
+- **Established**: 2013
+- **Location**: Dumka, Balia, Jharkhand 814101
+- **Management**: Techno India Group under a Public-Private Partnership (PPP) model
+- **Affiliations**: Jharkhand University of Technology (JUT), Ranchi; SKMU, Dumka
+- **Accreditations**: AICTE, NAAC (B grade), NBA (Civil, Electrical, Mechanical), ISO 9001:2015
+- **Mission**: Produce skilled engineers for global challenges
+- **Grants**: Rs 10 crore from MHRD for technical development
+
+## Academic Programs
+### Undergraduate Programs
+- **B.Tech (4 years, 450 seats)**:
+  - Computer Science and Engineering (CSE): AI, ML, cybersecurity
+  - Civil Engineering (CE): Structural, transportation
+  - Electrical Engineering (EE): Power systems, renewable energy
+  - Electronics and Communication Engineering (ECE): VLSI, telecom
+  - Mechanical Engineering (ME): Robotics, manufacturing
+- **B.Tech Lateral Entry (3 years)**: For diploma holders
+- **BCA**: Programming, web development
+- **Postgraduate Programs**: M.Tech in advanced engineering fields
+
+## Admission Process
+- **Eligibility**:
+  - B.Tech: 45% in 10+2 (PCM) (40% for reserved categories)
+  - M.Tech: B.Tech degree with GATE score
+  - BCA: 10+2 with Maths/Computer Science
+- **Entrance Exams**:
+  - B.Tech: JEE Main/JEE Advanced, JCECEB counseling
+  - M.Tech: GATE
+  - BCA: Merit-based or JUT entrance
+- **Application**: Online at www.dumkaengg.edu.in or offline
+- **Fees**:
+  - Tuition: Rs 34,000/semester
+  - Hostel: Rs 15,000/semester + Rs 3,000/month mess
+  - Scholarships: Up to 100% waivers, e-Kalyan for SC/ST/OBC
+
+## Infrastructure
+- **Academic**: Smart classrooms, advanced labs, Centre of Excellence (AI, IoT)
+- **Library**: 20,000+ books, IEEE/Springer access
+- **Hostels**: 500+ capacity, Wi-Fi (issues with food quality)
+- **Sports**: Cricket, football, indoor games
+- **Medical**: 24/7 health center
+- **Other**: Canteen, bank, ATM, green campus
+
+## Faculty
+- **Strength**: 70+ educators, many with PhDs from IITs/NITs
+- **Rating**: 3.47/5
+- **Methodology**: Lectures, workshops, research focus
+
+## Placements
+- **Median Salary**: Rs 4.7L (NIRF 2025)
+- **Top Recruiters**: Microsoft, TCS, Tech Mahindra
+- **Placement Rate**: 20–30% (CSE/ECE), 3–10% (CE/ME/EE)
+- **Challenges**: Limited core branch placements
+
+## Campus Life
+- **Clubs**: Robotics, Coding, Dance, Music
+- **Festivals**:
+  - **Tecurious**: Technical fest (robotics, hackathons)
+  - **Fantik**: Cultural fest (dance, music)
+- **Location**: 0.5 km from Dumka Railway Station
+
+## Notable Student
+- **Connecto Shivam**: Full Stack Developer, startup leader
+  - Achievements: Sanyam (smart education platform), Nanhee (AI baby care pad)
+  - Awards: Idea Pitching 2024, Innovathon 2025
+
+## Contact
+- **Website**: www.dumkaengg.edu.in
+- **Email**: info@dumkaengg.edu.in
+- **Phone**: +91-6434-222222
+      `
+    };
+
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    let conversationHistory = [];
+
+    // Auto-resize textarea
+    messageInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+
+    // Send message on Enter
+    messageInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Quick message function
+    window.sendQuickMessage = function(message) {
+      messageInput.value = message;
+      sendMessage();
+    };
+
+    // Main send message function
+    window.sendMessage = async function() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      // Disable input
+      messageInput.disabled = true;
+      sendButton.disabled = true;
+      
+      // Add user message
+      addMessage(message, 'user');
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+
+      // Show typing indicator
+      showTypingIndicator();
+
+      try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        const prompt = `You are Suhi, an AI assistant powered by Gemini for Dumka Engineering College and general knowledge queries. Be friendly, helpful, and professional. Use emojis where appropriate 😊.
+
+COLLEGE DATA:
+${collegeData.collegeInfo}
+
+SCHEDULE DATA:
+${JSON.stringify(collegeData.schedule, null, 2)}
+
+CONVERSATION HISTORY:
+${conversationHistory.map(h => `${h.role}: ${h.content}`).join('\n')}
+
+USER MESSAGE: ${message}
+
+Instructions:
+- Answer general knowledge queries accurately and concisely using your capabilities.
+- For college-related queries, use the provided college and schedule data.
+- For schedule queries, list classes with time, subject, teacher, and location in a table format.
+- For health queries, provide general advice and recommend consulting professionals if symptoms are mentioned.
+- Format responses with markdown for readability (e.g., headers, lists, tables).
+- If unsure about a general query, admit limitations and suggest alternative resources.
+- Keep responses informative but conversational, max 300 words unless detailed info is requested.
+- Do not generate images or process uploaded files; acknowledge limitations if asked.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text() || "Sorry, I couldn't generate a response.";
+        
+        // Hide typing indicator
+        hideTypingIndicator();
+        
+        // Add bot response
+        addMessage(text, 'bot', true);
+        
+        // Update conversation history
+        conversationHistory.push(
+          { role: 'user', content: message },
+          { role: 'assistant', content: text }
+        );
+        
+        // Keep only last 10 exchanges
+        if (conversationHistory.length > 20) {
+          conversationHistory = conversationHistory.slice(-20);
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        hideTypingIndicator();
+        addMessage("Sorry, I'm having trouble connecting. Please try again! 😅", 'bot');
+      } finally {
+        // Re-enable input
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        messageInput.focus();
+      }
+    };
+
+    function addMessage(content, type, isMarkdown = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`;
+      
+      const bubble = document.createElement('div');
+      bubble.className = `message-bubble p-4 rounded-2xl ${type === 'user' ? 'user-message' : 'bot-message'}`;
+      
+      if (type === 'bot') {
+        // Add avatar for bot
+        const avatar = document.createElement('div');
+        avatar.className = 'flex items-start space-x-3';
+        avatar.innerHTML = `
+          <div class="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+            <img src="logo.png" alt="Suhi Logo" class="w-5 h-5" style="width" style="width: 100%; height: 100%;">
+          </div>
+          <div class="flex-1">${isMarkdown ? marked.parse(content) : content}</div>
+        `;
+        bubble.appendChild(avatar);
+      } else {
+        bubble.innerHTML = isMarkdown ? marked.parse(content) : content;
+      }
+      
+      messageDiv.appendChild(bubble);
+      
+      // Insert before the quick actions or at the end
+      const quickActions = chatContainer.querySelector('.flex-wrap');
+      if (quickActions && chatContainer.children.length <= 2) {
+        chatContainer.insertBefore(messageDiv, quickActions.parentElement);
+      } else {
+        chatContainer.appendChild(messageDiv);
+      }
+      
+      // Smooth scroll to bottom
+      chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+
+    function showTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.id = 'typing-message';
+      typingDiv.className = 'flex justify-start animate-fade-in';
+      typingDiv.innerHTML = `
+        <div class="message-bubble bot-message p-4 rounded-2xl">
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center flex-shrink-0">
+              <img src="logo.png" alt="Suhi Logo" class="w-5 h-5" style="width: 100%; height: 100%;">
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-gray-600 text-sm">Suhi is typing</span>
+              <div class="flex space-x-1">
+                <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      chatContainer.appendChild(typingDiv);
+      chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+
+    function hideTypingIndicator() {
+      const typingMsg = document.getElementById('typing-message');
+      if (typingMsg) {
+        typingMsg.remove();
+      }
+    }
+
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      const notificationText = document.getElementById('notification-text');
+      notificationText.textContent = message;
+      notification.classList.remove('translate-x-full');
+      
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+      }, 3000);
+    }
+
+    // Check for upcoming classes
+    function checkUpcomingClasses() {
+      const now = new Date();
+      const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const currentTime = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      
+      const todaySchedule = collegeData.schedule.filter(item => item[0] === currentDay);
+      
+      for (let classItem of todaySchedule) {
+        const classTime = classItem[1].split('-')[0];
+        const classStartTime = new Date(`${now.toDateString()} ${classTime}`);
+        const timeDiff = classStartTime.getTime() - now.getTime();
+        
+        // Notify 15 minutes before class
+        if (timeDiff > 0 && timeDiff <= 15 * 60 * 1000) {
+          showNotification(`Upcoming: ${classItem[2]} at ${classItem[1]} in ${classItem[4]}`);
+          break;
+        }
+      }
+    }
+
+    // Check for classes every minute
+    setInterval(checkUpcomingClasses, 60000);
+
+    // Focus on input when page loads
+    messageInput.focus();
+
+    // Show welcome notification
+    setTimeout(() => {
+      showNotification("Welcome to Suhi! Your AI assistant for college and general queries is ready. 😊");
+    }, 1000);
+  </script>
+</body>
+</html>
