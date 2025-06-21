@@ -18,7 +18,9 @@
             'dark': '#0F172A',
             'light': '#F8FAFC',
             'user-bg': '#3B82F6',
-            'bot-bg': '#F3F4F6'
+            'bot-bg': '#F3F4F6',
+            'pink-tick': '#FF69B4',
+            'color': '#FF69B4'
           },
           animation: {
             'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -49,8 +51,9 @@
     }
   </script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gradient-to-br from-dark via-slate-900 to-slate-800 text-white min-h-screen overflow-hidden">
+<body class="bg-gradient-to-br from-dark via-slate-900 to-slate-800 text-white min-h-screen overflow-hidden dark-theme">
   <!-- Background Effects -->
   <div class="fixed inset-0 overflow-hidden pointer-events-none">
     <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/10 blur-3xl"></div>
@@ -70,12 +73,18 @@
             <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Suhi
             </h1>
-            <p class="text-xs text-gray-400">AI-Powered College Assistant</p>
+            <p class="text-xs text-gray-400">AI-Powered College Assistant -- Developed by Connecto Shivam</p>
           </div>
         </div>
         
-        <!-- Status Indicator -->
+        <!-- Status Indicator and Theme Toggle -->
         <div class="flex items-center space-x-2">
+          <button id="themeToggle" class="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200">
+            <i class="fas fa-moon text-gray-400"></i>
+          </button>
+          <button id="remindersBtn" class="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200">
+            <i class="fas fa-bell text-gray-400"></i>
+          </button>
           <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           <span class="text-sm text-gray-300">Online</span>
         </div>
@@ -94,7 +103,7 @@
             <i class="fas fa-graduation-cap text-white text-2xl"></i>
           </div>
           <h3 class="text-lg font-semibold mb-2">Poochho.. apni Suhi se....!</h3>
-          <p class="text-gray-400 text-sm">Your AI-powered assistant for Dumka Engineering College and general queries. Ask about courses, facilities, placements, or anything else! 😊</p>
+          <p class="text-gray-400 text-sm">Your AI-powered assistant By Connecto Shivam for Dumka Engineering College and general queries. Ask about courses, facilities, placements, or anything else! 😊</p>
         </div>
       </div>
 
@@ -113,6 +122,9 @@
           <button onclick="sendQuickMessage('Tell me about admission process')" class="quick-action-btn">
             <i class="fas fa-user-graduate mr-2"></i>Admissions
           </button>
+          <button onclick="sendQuickMessage('I want to do a quick health check')" class="quick-action-btn">
+            <i class="fas fa-heartbeat mr-2"></i>Health Check
+          </button>
         </div>
       </div>
     </div>
@@ -122,9 +134,12 @@
       <div class="container mx-auto max-w-4xl">
         <div class="flex items-end space-x-3">
           <!-- File Upload -->
-          <button class="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 group">
-            <i class="fas fa-paperclip text-gray-400 group-hover:text-white"></i>
-          </button>
+          <div class="file-upload">
+            <input type="file" id="imageInput" accept="image/*,application/pdf,.doc,.docx">
+            <label for="imageInput" class="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 group cursor-pointer">
+              <i class="fas fa-paperclip text-gray-400 group-hover:text-white"></i>
+            </label>
+          </div>
           
           <!-- Message Input -->
           <div class="flex-1 relative">
@@ -162,6 +177,24 @@
         </div>
       </div>
     </div>
+
+    <!-- Reminders Modal -->
+    <div id="remindersModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+      <div class="bg-dark rounded-2xl p-6 max-w-md w-full border border-white/10">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Your Reminders</h3>
+          <button onclick="closeRemindersModal()" class="p-2 bg-white/10 rounded-xl">
+            <i class="fas fa-times text-gray-400"></i>
+          </button>
+        </div>
+        <div id="remindersList" class="space-y-2"></div>
+        <div class="mt-4 text-center">
+          <button onclick="clearReminders()" class="px-4 py-2 bg-red-500/80 hover:bg-red-500 rounded-xl text-white transition-all duration-200">
+            Clear All Reminders
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Notification Toast -->
@@ -170,9 +203,39 @@
       <i class="fas fa-bell text-secondary"></i>
       <span id="notification-text">Notification</span>
     </div>
+    <button onclick="dismissNotification()" class="absolute top-2 right-2 p-1 bg-white/10 rounded-full">
+      <i class="fas fa-times text-gray-400"></i>
+    </button>
   </div>
 
   <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #1a1a24;
+      --bg-tertiary: #2a2a38;
+      --text-primary: #ffffff;
+      --text-secondary: #b8b8d1;
+      --text-muted: #8e8ea9;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --shadow-primary: 0 20px 40px rgba(0, 0, 0, 0.3);
+      --shadow-secondary: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .light-theme {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --border-color: rgba(0, 0, 0, 0.1);
+      --shadow-primary: 0 20px 40px rgba(0, 0, 0, 0.1);
+      --shadow-secondary: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
     .quick-action-btn {
       @apply px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm transition-all duration-200 border border-white/10 hover:border-white/20 backdrop-blur-sm;
     }
@@ -210,6 +273,143 @@
     textarea {
       field-sizing: content;
     }
+
+    .file-upload input {
+      display: none;
+    }
+
+    .medical-container {
+      background: var(--success-gradient);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
+      color: white;
+    }
+
+    .medical-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .medical-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .symptoms-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .symptom-tag {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .symptom-tag:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .schedule-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+
+    .schedule-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .schedule-day {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: var(--bg-tertiary);
+      transition: all 0.2s ease;
+    }
+
+    .schedule-item:hover {
+      background: var(--primary-gradient);
+      color: white;
+      transform: translateX(4px);
+    }
+
+    .schedule-time {
+      font-weight: 600;
+      min-width: 100px;
+    }
+
+    .schedule-details {
+      flex: 1;
+      margin-left: 16px;
+    }
+
+    .schedule-subject {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .schedule-teacher {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .read-ticks {
+      display: flex;
+      gap: 2px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--primary); /* Default color for single tick */
+    }
+
+    .read-ticks.read .read-ticks {
+      color: var(--pink-tick); /* Pink color for double ticks when read */
+    }
+
+    .read-ticks i {
+      font-size: 10px;
+    }
+
+    .heart-reaction {
+      margin-top: 4px;
+      font-size: 14px;
+      color: var(--pink-tick);
+    }
+
+    @media (max-width: 768px) {
+      .message-bubble {
+        max-w-[90%];
+      }
+      .quick-action-btn {
+        @apply px-3 py-1 text-xs;
+      }
+    }
   </style>
 
   <script type="module">
@@ -222,22 +422,22 @@
         ["Monday", "09:30-10:20", "Computer Network", "Keshab Sir", "Lab 1", "lecture"],
         ["Monday", "11:10-12:00", "Algorithm Lab", "Sunidhi Mam", "Computer Lab", "lab", "Group 1"],
         ["Monday", "14:20-15:10", "Sports/Painting/Music", "Arindum Sir", "Sports Complex", "activity"],
-        ["Tuesday", "09:30-10:20", "Algorithm", "Sunidhi Mam", "Room 201", "lecture"],
+        ["Tuesday", "09:30-10:20", "Algorithm", "Sunidhi Mam", "Room 211", "lecture"],
         ["Tuesday", "10:20-11:10", "Advanced Programming", "Amit Sir", "Room 205", "lecture"],
         ["Tuesday", "11:10-12:00", "Machine Learning", "Keshab Sir", "Room 203", "lecture"],
-        ["Tuesday", "12:20-13:10", "Maths Modelling", "RKB Sir", "Room 204", "lecture"],
+        ["Tuesday", "12:20-13:10", "Maths Modelling", "RKB Gupta Sir", "Room 204", "lecture"],
         ["Tuesday", "14:20-15:10", "Algorithm Lab", "Sunidhi Mam", "Computer Lab", "lab", "Group 2"],
         ["Wednesday", "09:30-10:20", "Advanced Programming", "Amit Sir", "Room 205", "lecture"],
-        ["Wednesday", "10:30-10:20", "Operating System", "Ranadeep Sir", "Room 205", "lecture"],
+        ["Wednesday", "10:30-11:20", "Operating System", "Ranadeep Sir", "Room 205", "lecture"],
         ["Wednesday", "11:30-12:20", "Finance", "Anwesha Mam", "Room 206", "lecture"],
         ["Wednesday", "12:30-14:20", "Operating System Lab", "Ranadeep Sir", "OS Lab", "lab", "Group 2"],
-        ["Thursday", "09:30-10:30", "Algorithm", "Sunidhi Mam", "Room 201", "lecture"],
+        ["Thursday", "09:30-10:30", "Algorithm", "Sunidhi Mam", "Room 211", "lecture"],
         ["Thursday", "10:30-11:20", "Career Advancement", "Anutosh Sir", "Seminar Hall", "seminar"],
         ["Thursday", "11:30-12:20", "Advanced Programming Lab", "Amit Sir", "Programming Lab", "lab", "Group 2"],
-        ["Thursday", "12:30-13:20", "Maths Modelling", "RKB Sir", "Room 204", "lecture"],
+        ["Thursday", "12:30-13:20", "Maths Modelling", "RKB Gupta Sir", "Room 204", "lecture"],
         ["Friday", "09:30-10:20", "Operating System", "Ranadeep Sir", "Room 205", "lecture"],
         ["Friday", "10:30-11:20", "Career Advancement", "Anutosh Sir", "Seminar Hall", "seminar"],
-        ["Friday", "14:20-15:10", "Maths Modelling", "RKB Sir", "Room 204", "lecture"],
+        ["Friday", "14:20-15:10", "Maths Modelling", "RKB Gupta Sir", "Room 204", "lecture"],
         ["Friday", "15:30-17:20", "Operating System Lab", "Ranadeep Sir", "OS Lab", "lab", "Group 1"]
       ],
       collegeInfo: `
@@ -253,14 +453,13 @@
 - **Grants**: Rs 10 crore from MHRD for technical development
 
 ## Academic Programs
-### Undergraduate Programs
 - **B.Tech (4 years, 450 seats)**:
   - Computer Science and Engineering (CSE): AI, ML, cybersecurity
   - Civil Engineering (CE): Structural, transportation
   - Electrical Engineering (EE): Power systems, renewable energy
   - Electronics and Communication Engineering (ECE): VLSI, telecom
-  - Mechanical Engineering (ME): Robotics, manufacturing
-- **B.Tech Lateral Entry (3 years)**: For diploma holders
+  - Mechanical Engineering (ME): Robotics, automation
+- **B.Tech Diploma (3 years)**: For diploma holders
 - **BCA**: Programming, web development
 - **Postgraduate Programs**: M.Tech in advanced engineering fields
 
@@ -302,75 +501,161 @@
 - **Clubs**: Robotics, Coding, Dance, Music
 - **Festivals**:
   - **Tecurious**: Technical fest (robotics, hackathons)
-  - **Fantik**: Cultural fest (dance, music)
+  - **Fantik**: Cultural fest (dance, music, Open mic)
 - **Location**: 0.5 km from Dumka Railway Station
 
 ## Notable Student
 - **Connecto Shivam**: Full Stack Developer, startup leader
   - Achievements: Sanyam (smart education platform), Nanhee (AI baby care pad)
-  - Awards: Idea Pitching 2024, Innovathon 2025
+  - Awards: Idea Pitching 2024, Innovathon 2025 & Navkriti 2025
+  - Founder & CEO of Suhi 
+  - Featured in Times of India, Danik jagran , parbhat khabhar and other publications.
+  - Awarded best Emotional writer & Good Contribution in Content writting at PocketFM.
 
 ## Contact
 - **Website**: www.dumkaengg.edu.in
 - **Email**: info@dumkaengg.edu.in
 - **Phone**: +91-6434-222222
+
+## Events
+- **Tecurious 2K25** (20–22 June 2025):
+  - **20 June**:
+    - 09:30–10:30 AM: Inauguration & Speeches – Main Stage
+    - 10:30–12:00 PM: Science Modeling (Vigyan Pradarshan) – Open Ground / Block 2
+    - 12:00–04:00 PM: Tech Quiz (Tech Prashan) – Language Lab
+  - **21 June**:
+    - 09:30–10:30 AM: T-Shirt Painting (Rangde T) – Center Circle
+    - 11:00–12:00 PM: Coding (Algo Arena Round 1) – CSE Lab
+    - 12:00–01:00 PM: Documentary/Photography – Seminar Hall
+    - 01:00–04:00 PM: BGMI Gaming (The Royal Battle) – Campus (Projection in Seminar Hall)
+  - **22 June**:
+    - 09:30–10:30 AM: Poster Presentation (Paper Collage) – Block 2
+    - 10:30–12:30 PM: Coding Final (Algo Arena) – CSE Lab
+    - 12:30–03:00 PM: Robot Race (Robo Rush) – Open Ground / Mechanical Workshop
+  - **Note**: Participants & coordinators must report 30 mins before events.
       `
     };
+
+    const dailyRoutine = `
+# A Typical Day at Dumka Engineering College
+
+- **08:00 AM - Wake Up**: Start your day early to prepare for classes and activities.
+- **08:30 AM - Breakfast**: Head to the hostel mess or campus canteen for a quick meal.
+- **09:30 AM - Morning Classes**: Attend lectures or labs (e.g., Computer Network, Algorithm) in smart classrooms or labs like Lab 1 or Room 211.
+- **12:30 PM - Lunch Break**: Grab lunch at the canteen or mess; socialize with friends.
+- **01:30 PM - Afternoon Sessions**: Continue with classes, labs, or seminars (e.g., Career Advancement in Seminar Hall).
+- **03:30 PM - Break/Activities**: Join sports at the Sports Complex, participate in clubs (Robotics, Coding), or relax at the library with 20,000+ books.
+- **05:30 PM - Evening Study**: Work on assignments or group study in the hostel or library.
+- **07:00 PM - Dinner**: Evening meal at the mess or local eateries near campus.
+- **08:00 PM - Free Time**: Engage in extracurriculars (Dance, Music clubs) or unwind with friends.
+- **10:00 PM - Study/Revision**: Review notes or prepare for next day's classes.
+- **11:30 PM - Wind Down**: Relax, maybe browse IEEE/Springer journals online.
+- **12:00 AM - Sleep**: Rest for the next day's challenges.
+
+*Note*: Schedule may vary based on academic or event days (e.g., Tecurious, Fantik). Check notifications for updates! 😊
+    `;
 
     const chatContainer = document.getElementById('chat-container');
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
-    const typingIndicator = document.getElementById('typing-indicator');
+    const imageInput = document.getElementById('imageInput');
+    const themeToggle = document.getElementById('themeToggle');
+    const remindersBtn = document.getElementById('remindersBtn');
+    const remindersModal = document.getElementById('remindersModal');
+    const remindersList = document.getElementById('remindersList');
 
-    let conversationHistory = [];
+    let conversationHistory = JSON.parse(localStorage.getItem('suhi-conversation')) || [];
+    let reminders = JSON.parse(localStorage.getItem('suhi-reminders')) || [];
+    let currentImageFile = null;
+    let lastUserMessage = null;
 
-    // Auto-resize textarea
-    messageInput.addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = this.scrollHeight + 'px';
-    });
+    // Initialize App
+    function initializeApp() {
+      loadTheme();
+      setupEventListeners();
+      loadConversation();
+      setTimeout(() => {
+        showNotification("Welcome to Suhi! Your AI assistant is ready to help with college and general queries. 😊");
+      }, 1000);
+      checkUpcomingReminders();
+    }
 
-    // Send message on Enter
-    messageInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
+    // Theme Management
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('suhi-theme') || 'dark';
+      document.body.className = `bg-gradient-to-br from-dark via-slate-900 to-slate-800 text-white min-h-screen overflow-hidden ${savedTheme}-theme`;
+      updateThemeIcon(savedTheme);
+    }
 
-    // Quick message function
+    function toggleTheme() {
+      const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.body.className = `bg-gradient-to-br from-dark via-slate-900 to-slate-800 text-white min-h-screen overflow-hidden ${newTheme}-theme`;
+      localStorage.setItem('suhi-theme', newTheme);
+      updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = themeToggle.querySelector('i');
+      icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    // Event Listeners
+    function setupEventListeners() {
+      themeToggle.addEventListener('click', toggleTheme);
+      remindersBtn.addEventListener('click', showRemindersModal);
+      messageInput.addEventListener('input', autoResizeTextarea);
+      messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      imageInput.addEventListener('change', handleImageUpload);
+      chatContainer.addEventListener('scroll', handleScroll);
+    }
+
+    function handleScroll() {
+      const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 10;
+    }
+
+    function loadConversation() {
+      conversationHistory.forEach(msg => {
+        addMessage(msg.content, msg.role === 'user' ? 'user' : 'bot', msg.role === 'assistant');
+      });
+    }
+
     window.sendQuickMessage = function(message) {
       messageInput.value = message;
       sendMessage();
     };
 
-    // Main send message function
     window.sendMessage = async function() {
       const message = messageInput.value.trim();
-      if (!message) return;
+      if (!message && !currentImageFile) return;
 
-      // Disable input
       messageInput.disabled = true;
       sendButton.disabled = true;
-      
-      // Add user message
+
       addMessage(message, 'user');
       messageInput.value = '';
       messageInput.style.height = 'auto';
 
-      // Show typing indicator
       showTypingIndicator();
 
       try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         
-        const prompt = `You are Suhi, an AI assistant powered by Gemini for Dumka Engineering College and general knowledge queries. Be friendly, helpful, and professional. Use emojis where appropriate 😊.
+        const prompt = `You are Suhi, an AI assistant powered developed by Connecto Shivam for Dumka Engineering College and general knowledge queries. Be friendly, helpful, and professional. Use emojis where appropriate 😊.
 
 COLLEGE DATA:
 ${collegeData.collegeInfo}
 
 SCHEDULE DATA:
 ${JSON.stringify(collegeData.schedule, null, 2)}
+
+DAILY ROUTINE:
+${dailyRoutine}
 
 CONVERSATION HISTORY:
 ${conversationHistory.map(h => `${h.role}: ${h.content}`).join('\n')}
@@ -380,45 +665,80 @@ USER MESSAGE: ${message}
 Instructions:
 - Answer general knowledge queries accurately and concisely using your capabilities.
 - For college-related queries, use the provided college and schedule data.
-- For schedule queries, list classes with time, subject, teacher, and location in a table format.
+- For schedule queries (e.g., "today's schedule", "monday ka timetable"), list classes with time, subject, teacher, and location in a table format.
+- For daily routine queries (e.g., "routine", "typical day"), provide the generic routine without mentioning a specific day.
+- For Tecurious event queries, use the event schedule from college data.
 - For health queries, provide general advice and recommend consulting professionals if symptoms are mentioned.
+- For study-related queries, suggest study plans, exam prep tips, or academic resources.
 - Format responses with markdown for readability (e.g., headers, lists, tables).
 - If unsure about a general query, admit limitations and suggest alternative resources.
-- Keep responses informative but conversational, max 300 words unless detailed info is requested.
-- Do not generate images or process uploaded files; acknowledge limitations if asked.`;
+- Do not handle assignment-related queries; respond with "Sorry, I don't have info on assignments. Try asking about your schedule or study tips! 😊"
+- Do not generate images or process uploaded files; acknowledge limitations if asked.
+- Mix Hindi and English naturally in responses.
+- Keep responses informative but conversational, max 300 words unless detailed info is requested.`;
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text() || "Sorry, I couldn't generate a response.";
         
-        // Hide typing indicator
         hideTypingIndicator();
         
-        // Add bot response
         addMessage(text, 'bot', true);
         
-        // Update conversation history
+        if (isScheduleQuery(message)) {
+          const day = extractDayFromQuery(message);
+          if (day === 'Saturday' || day === 'Sunday') {
+            addMessage(`Today is no class. General routine dekhna chahte ho? 😊`, 'bot');
+          } else if (day && collegeData.schedule.some(item => item[0] === day)) {
+            const scheduleDisplay = createScheduleDisplay(day, collegeData.schedule.filter(item => item[0] === day));
+            chatContainer.appendChild(scheduleDisplay);
+          } else if (day) {
+            addMessage(`Aaj ${day} hai, aur is din koi classes nahi hain. General routine dekhna chahte ho? 😊`, 'bot');
+          }
+        }
+
+        if (isMedicalQuery(message)) {
+          const medicalInterface = createMedicalInterface();
+          chatContainer.appendChild(medicalInterface);
+        }
+
+        if (isEventQuery(message)) {
+          const date = extractDateFromQuery(message);
+          if (date) {
+            const events = getEventsForDate(date);
+            if (events.length > 0) {
+              const eventDisplay = createEventDisplay(date, events);
+              chatContainer.appendChild(eventDisplay);
+            }
+          }
+        }
+
         conversationHistory.push(
           { role: 'user', content: message },
           { role: 'assistant', content: text }
         );
-        
-        // Keep only last 10 exchanges
+
         if (conversationHistory.length > 20) {
           conversationHistory = conversationHistory.slice(-20);
         }
+
+        localStorage.setItem('suhi-conversation', JSON.stringify(conversationHistory));
 
       } catch (error) {
         console.error('Error:', error);
         hideTypingIndicator();
         addMessage("Sorry, I'm having trouble connecting. Please try again! 😅", 'bot');
       } finally {
-        // Re-enable input
         messageInput.disabled = false;
         sendButton.disabled = false;
         messageInput.focus();
       }
     };
+
+    function isHeartfeltMessage(content) {
+      const heartfeltKeywords = ['thanks', 'thank you', 'love', 'grateful', 'appreciate', 'dhanyavad', 'shukriya'];
+      return heartfeltKeywords.some(keyword => content.toLowerCase().includes(keyword));
+    }
 
     function addMessage(content, type, isMarkdown = false) {
       const messageDiv = document.createElement('div');
@@ -428,23 +748,40 @@ Instructions:
       bubble.className = `message-bubble p-4 rounded-2xl ${type === 'user' ? 'user-message' : 'bot-message'}`;
       
       if (type === 'bot') {
-        // Add avatar for bot
         const avatar = document.createElement('div');
         avatar.className = 'flex items-start space-x-3';
         avatar.innerHTML = `
           <div class="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
-            <img src="logo.png" alt="Suhi Logo" class="w-5 h-5" style="width" style="width: 100%; height: 100%;">
+            <img src="logo.png" alt="Suhi Logo" class="w-5 h-5" style="width: 100%; height: 100%;">
           </div>
           <div class="flex-1">${isMarkdown ? marked.parse(content) : content}</div>
         `;
         bubble.appendChild(avatar);
+        if (lastUserMessage) {
+          const ticks = lastUserMessage.querySelector('.read-ticks');
+          if (ticks) {
+            ticks.innerHTML = '<i class="fas fa-check"></i><i class="fas fa-check"></i>';
+            ticks.classList.add('read');
+          }
+          if (isHeartfeltMessage(lastUserMessage.textContent)) {
+            const heart = lastUserMessage.querySelector('.heart-reaction') || document.createElement('div');
+            heart.className = 'heart-reaction';
+            heart.innerHTML = '❤️';
+            if (!lastUserMessage.querySelector('.heart-reaction')) {
+              lastUserMessage.appendChild(heart);
+            }
+          }
+        }
       } else {
-        bubble.innerHTML = isMarkdown ? marked.parse(content) : content;
+        bubble.innerHTML = `
+          ${isMarkdown ? marked.parse(content) : content}
+          <div class="read-ticks"><i class="fas fa-check"></i></div>
+        `;
+        lastUserMessage = bubble;
       }
       
       messageDiv.appendChild(bubble);
       
-      // Insert before the quick actions or at the end
       const quickActions = chatContainer.querySelector('.flex-wrap');
       if (quickActions && chatContainer.children.length <= 2) {
         chatContainer.insertBefore(messageDiv, quickActions.parentElement);
@@ -452,11 +789,7 @@ Instructions:
         chatContainer.appendChild(messageDiv);
       }
       
-      // Smooth scroll to bottom
-      chatContainer.scrollTo({
-        top: chatContainer.scrollHeight,
-        behavior: 'smooth'
-      });
+      scrollToBottom();
     }
 
     function showTypingIndicator() {
@@ -481,10 +814,7 @@ Instructions:
         </div>
       `;
       chatContainer.appendChild(typingDiv);
-      chatContainer.scrollTo({
-        top: chatContainer.scrollHeight,
-        behavior: 'smooth'
-      });
+      scrollToBottom();
     }
 
     function hideTypingIndicator() {
@@ -492,6 +822,324 @@ Instructions:
       if (typingMsg) {
         typingMsg.remove();
       }
+    }
+
+    function createScheduleDisplay(day, schedule) {
+      const scheduleDiv = document.createElement('div');
+      scheduleDiv.classList.add('schedule-container');
+      
+      let scheduleHTML = `
+        <div class="schedule-header">
+          <div class="schedule-day">${day} Schedule</div>
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+      `;
+
+      schedule.forEach(classInfo => {
+        scheduleHTML += `
+          <div class="schedule-item">
+            <div class="schedule-time">${classInfo[1]}</div>
+            <div class="schedule-details">
+              <div class="schedule-subject">${classInfo[2]}</div>
+              <div class="schedule-teacher">${classInfo[3]}</div>
+              <div class="schedule-teacher">${classInfo[4]}${classInfo[6] ? `, Group: ${classInfo[6]}` : ''}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      scheduleHTML += `
+        <div style="margin-top: 16px; padding: 12px; background: var(--primary-gradient); border-radius: 12px; color: white; text-align: center;">
+          <i class="fas fa-bell"></i> क्या मैं classes का reminder set करूं?
+          <div style="margin-top: 8px;">
+            <button onclick="setClassReminders('${day}')" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin: 0 4px;">
+              हाँ, Set करना
+            </button>
+            <button onclick="closeReminderOption(this)" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin: 0 4px;">
+              नहीं, धन्यवाद
+            </button>
+          </div>
+        </div>
+      `;
+
+      scheduleDiv.innerHTML = scheduleHTML;
+      return scheduleDiv;
+    }
+
+    function createEventDisplay(date, events) {
+      const eventDiv = document.createElement('div');
+      eventDiv.classList.add('schedule-container');
+      
+      let eventHTML = `
+        <div class="schedule-header">
+          <div class="schedule-day">Tecurious Events - ${date}</div>
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+      `;
+
+      events.forEach(event => {
+        const timeMatch = event.match(/(\d{2}:\d{2}–\d{2}:\d{2} [AP]M)/);
+        const eventName = event.match(/: (.*?)( –|$)/)[1];
+        const location = event.match(/– (.*?)$/)[1];
+        eventHTML += `
+          <div class="schedule-item">
+            <div class="schedule-time">${timeMatch[1]}</div>
+            <div class="schedule-details">
+              <div class="schedule-subject">${eventName}</div>
+              <div class="schedule-teacher">${location}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      eventHTML += `
+        <div style="margin-top: 16px; padding: 12px; background: var(--primary-gradient); border-radius: 12px; color: white; text-align: center;">
+          <i class="fas fa-bell"></i> क्या मैं events का reminder set करूं?
+          <div style="margin-top: 8px;">
+            <button onclick="setEventReminders('${date}')" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin: 0 4px;">
+              हाँ, Set करना
+            </button>
+            <button onclick="closeReminderOption(this)" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin: 0 4px;">
+              नहीं, धन्यवाद
+            </button>
+          </div>
+        </div>
+      `;
+
+      eventDiv.innerHTML = eventHTML;
+      return eventDiv;
+    }
+
+    function createMedicalInterface() {
+      const medicalDiv = document.createElement('div');
+      medicalDiv.classList.add('medical-container');
+      medicalDiv.innerHTML = `
+        <div class="medical-header">
+          <div class="medical-icon">
+            <i class="fas fa-stethoscope"></i>
+          </div>
+          <div>
+            <h3>AI Medical Assistant</h3>
+            <p>Describe your symptoms or health concerns</p>
+          </div>
+        </div>
+        <div class="symptoms-input">
+          <div class="symptom-tag" onclick="addSymptom('headache')">Headache</div>
+          <div class="symptom-tag" onclick="addSymptom('fever')">Fever</div>
+          <div class="symptom-tag" onclick="addSymptom('cough')">Cough</div>
+          <div class="symptom-tag" onclick="addSymptom('fatigue')">Fatigue</div>
+          <div class="symptom-tag" onclick="addSymptom('nausea')">Nausea</div>
+          <div class="symptom-tag" onclick="addSymptom('dizziness')">Dizziness</div>
+        </div>
+        <p style="font-size: 12px; opacity: 0.8; margin-top: 12px;">
+          <i class="fas fa-info-circle"></i> This is for informational purposes only. Please consult a healthcare professional for proper medical advice.
+        </p>
+      `;
+      return medicalDiv;
+    }
+
+    function isScheduleQuery(message) {
+      const scheduleKeywords = ['schedule', 'class', 'timetable', 'today', 'tomorrow', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+      return scheduleKeywords.some(keyword => message.toLowerCase().includes(keyword)) && !isRoutineQuery(message);
+    }
+
+    function isRoutineQuery(message) {
+      return message.toLowerCase().includes('routine') || message.toLowerCase().includes('typical day');
+    }
+
+    function isMedicalQuery(message) {
+      const medicalKeywords = ['symptom', 'health', 'medical', 'doctor', 'pain', 'fever', 'headache', 'sick', 'medicine'];
+      return medicalKeywords.some(keyword => message.toLowerCase().includes(keyword));
+    }
+
+    function isEventQuery(message) {
+      return message.toLowerCase().includes('tecurious') || message.toLowerCase().includes('event');
+    }
+
+    function extractDayFromQuery(message) {
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+      
+      if (message.toLowerCase().includes('today')) {
+        return today;
+      }
+      
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowDay = tomorrow.toLocaleDateString('en-US', { weekday: 'long' });
+      
+      if (message.toLowerCase().includes('tomorrow')) {
+        return tomorrowDay;
+      }
+
+      for (const day of days) {
+        if (message.toLowerCase().includes(day.toLowerCase())) {
+          return day;
+        }
+      }
+      
+      return null;
+    }
+
+    function extractDateFromQuery(message) {
+      const tecuriousDates = ['20 June 2025', '21 June 2025', '22 June 2025'];
+      for (const date of tecuriousDates) {
+        if (message.toLowerCase().includes(date.toLowerCase()) || message.toLowerCase().includes('tecurious')) {
+          return date;
+        }
+      }
+      return null;
+    }
+
+    function getEventsForDate(date) {
+      const eventsMatch = collegeData.collegeInfo.match(new RegExp(`${date}:\\n([\\s\\S]*?)(\\n\\n|$)`));
+      if (eventsMatch && eventsMatch[1]) {
+        return eventsMatch[1].split('\n').filter(line => line.trim().startsWith('-'));
+      }
+      return [];
+    }
+
+    function autoResizeTextarea() {
+      messageInput.style.height = 'auto';
+      messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+    }
+
+    function scrollToBottom() {
+      chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        currentImageFile = file;
+        const uploadBtn = document.querySelector('label[for="imageInput"]');
+        uploadBtn.style.background = 'var(--primary-gradient)';
+        uploadBtn.style.color = 'white';
+        showNotification("File uploaded, but I can't process it yet. Try asking a question! 😊");
+      }
+    }
+
+    function setClassReminders(day) {
+      const schedule = collegeData.schedule.filter(item => item[0] === day);
+      const now = new Date();
+      const today = now.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
+      
+      schedule.forEach(classInfo => {
+        const [classDay, time, subject, teacher, location] = classInfo;
+        const [startTime] = time.split('-');
+        const reminderTime = new Date(`${today} ${startTime}`);
+        reminders.push({
+          id: `class-${day}-${startTime}-${Date.now()}`,
+          type: 'class',
+          day,
+          time: startTime,
+          subject,
+          location,
+          timestamp: reminderTime.getTime()
+        });
+      });
+
+      localStorage.setItem('suhi-reminders', JSON.stringify(reminders));
+      updateRemindersList();
+      addMessage(
+        `✅ ${day} के लिए ${schedule.length} class reminders set किए गए हैं। 15 मिनट पहले notification आएगा!`,
+        'bot'
+      );
+      showNotification(`Reminders set for ${day}'s classes!`);
+      scrollToBottom();
+    }
+
+    function setEventReminders(date) {
+      const events = getEventsForDate(date);
+      const now = new Date();
+      events.forEach(event => {
+        const timeMatch = event.match(/(\d{2}:\d{2}–\d{2}:\d{2} [AP]M)/);
+        if (timeMatch) {
+          const eventTime = timeMatch[1].split('–')[0];
+          const eventName = event.match(/: (.*?)( –|$)/)[1];
+          const reminderTime = new Date(`${date} ${eventTime}`);
+          reminders.push({
+            id: `event-${date}-${eventTime}-${Date.now()}`,
+            type: 'event',
+            date,
+            time: eventTime,
+            name: eventName,
+            timestamp: reminderTime.getTime()
+          });
+        }
+      });
+
+      localStorage.setItem('suhi-reminders', JSON.stringify(reminders));
+      updateRemindersList();
+      addMessage(
+        `✅ ${date} के लिए Tecurious event reminders set किए गए हैं। 15 मिनट पहले notification आएगा!`,
+        'bot'
+      );
+      showNotification(`Reminders set for ${date}'s Tecurious events!`);
+      scrollToBottom();
+    }
+
+    function updateRemindersList() {
+      remindersList.innerHTML = '';
+      if (reminders.length === 0) {
+        remindersList.innerHTML = '<p class="text-gray-400 text-sm">No reminders set.</p>';
+        return;
+      }
+
+      reminders.sort((a, b) => a.timestamp - b.timestamp);
+      reminders.forEach(reminder => {
+        const reminderDiv = document.createElement('div');
+        reminderDiv.className = 'flex justify-between items-center p-3 bg-white/10 rounded-xl';
+        reminderDiv.innerHTML = `
+          <div>
+            <p class="font-semibold">${reminder.type === 'class' ? reminder.subject : reminder.name}</p>
+            <p class="text-sm text-gray-400">
+              ${reminder.type === 'class' ? `${reminder.day}, ${reminder.time} at ${reminder.location}` : `${reminder.date}, ${reminder.time}`}
+            </p>
+          </div>
+          <button onclick="deleteReminder('${reminder.id}')" class="p-2 bg-red-500/80 rounded-xl hover:bg-red-500">
+            <i class="fas fa-trash"></i>
+          </button>
+        `;
+        remindersList.appendChild(reminderDiv);
+      });
+    }
+
+    function deleteReminder(id) {
+      reminders = reminders.filter(r => r.id !== id);
+      localStorage.setItem('suhi-reminders', JSON.stringify(reminders));
+      updateRemindersList();
+      showNotification("Reminder deleted!");
+    }
+
+    function clearReminders() {
+      reminders = [];
+      localStorage.setItem('suhi-reminders', JSON.stringify(reminders));
+      updateRemindersList();
+      showNotification("All reminders cleared!");
+      remindersModal.classList.add('hidden');
+    }
+
+    function showRemindersModal() {
+      updateRemindersList();
+      remindersModal.classList.remove('hidden');
+    }
+
+    function closeRemindersModal() {
+      remindersModal.classList.add('hidden');
+    }
+
+    function closeReminderOption(button) {
+      const reminderDiv = button.closest('div').parentElement;
+      reminderDiv.style.display = 'none';
+    }
+
+    function addSymptom(symptom) {
+      messageInput.value += (messageInput.value ? ', ' : '') + symptom;
+      messageInput.focus();
     }
 
     function showNotification(message) {
@@ -502,40 +1150,38 @@ Instructions:
       
       setTimeout(() => {
         notification.classList.add('translate-x-full');
-      }, 3000);
+      }, 5000);
     }
 
-    // Check for upcoming classes
-    function checkUpcomingClasses() {
+    function dismissNotification() {
+      const notification = document.getElementById('notification');
+      notification.classList.add('translate-x-full');
+    }
+
+    function checkUpcomingReminders() {
       const now = new Date();
-      const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
-      const currentTime = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      const currentTime = now.getTime();
       
-      const todaySchedule = collegeData.schedule.filter(item => item[0] === currentDay);
-      
-      for (let classItem of todaySchedule) {
-        const classTime = classItem[1].split('-')[0];
-        const classStartTime = new Date(`${now.toDateString()} ${classTime}`);
-        const timeDiff = classStartTime.getTime() - now.getTime();
-        
-        // Notify 15 minutes before class
-        if (timeDiff > 0 && timeDiff <= 15 * 60 * 1000) {
-          showNotification(`Upcoming: ${classItem[2]} at ${classItem[1]} in ${classItem[4]}`);
-          break;
+      reminders.forEach(reminder => {
+        const timeDiff = reminder.timestamp - currentTime;
+        if (timeDiff > 0 && timeDiff <= 15 * 60 * 1000 && !reminder.notified) {
+          showNotification(
+            `Upcoming: ${reminder.type === 'class' ? reminder.subject : reminder.name} at ${reminder.time} ${reminder.type === 'class' ? `in ${reminder.location}` : `on ${reminder.date}`}`
+          );
+          reminder.notified = true;
+          localStorage.setItem('suhi-reminders', JSON.stringify(reminders));
         }
-      }
+      });
+
+      // Auto-remove past reminders
+      reminders = reminders.filter(r => r.timestamp > currentTime);
+      localStorage.setItem('suhi-reminders', JSON.stringify(reminders));
     }
 
-    // Check for classes every minute
-    setInterval(checkUpcomingClasses, 60000);
+    // Check reminders every 30 seconds
+    setInterval(checkUpcomingReminders, 30000);
 
-    // Focus on input when page loads
-    messageInput.focus();
-
-    // Show welcome notification
-    setTimeout(() => {
-      showNotification("Welcome to Suhi! Your AI assistant for college and general queries is ready. 😊");
-    }, 1000);
+    document.addEventListener('DOMContentLoaded', initializeApp);
   </script>
 </body>
 </html>
